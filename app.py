@@ -3,11 +3,12 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-# Configuración de la página
-st.set_page_title_config = st.set_page_config(
+# Configuración de la página (sidebar colapsado por defecto)
+st.set_page_config(
     page_title="Pensas por ti ou segues o que se espera de ti?",
     page_icon="🧠",
     layout="centered",
+    initial_sidebar_state="collapsed",
 )
 
 # Archivo CSV para persistencia local de resultados
@@ -22,7 +23,18 @@ def init_csv():
 
 init_csv()
 
-# Definición de preguntas y perfiles (idénticos al original)
+
+# Función para mostrar los logos centrados al final si existen en el repositorio
+def mostrar_logos():
+  # Puedes subir un archivo llamado 'logo.png' a tu repositorio de GitHub
+  if os.path.exists("logo.png"):
+    st.markdown("<br><hr>", unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+      st.image("logo.png", use_container_width=True)
+
+
+# Definición de preguntas y perfiles
 QUESTIONS = [
     {
         "q": (
@@ -268,7 +280,7 @@ RESULTS = [
     },
 ]
 
-# Menú lateral para separar o Test do Panel de Control (Dashboard)
+# Menú lateral (inicialmente pechado)
 st.sidebar.title("Navegación")
 modo = st.sidebar.radio("Elixir vista", ["Facer o Test", "Panel de Control (N)"])
 
@@ -284,7 +296,6 @@ if modo == "Facer o Test":
       unsafe_allow_html=True,
   )
 
-  # Inicializar session state
   if "step" not in st.session_state:
     st.session_state.step = "intro"
   if "genero" not in st.session_state:
@@ -353,7 +364,6 @@ if modo == "Facer o Test":
           st.rerun()
       else:
         if st.button("Ver o resultado", type="primary"):
-          # Gardar resultado no CSV
           score = sum(st.session_state.answers)
           tier = next(r for r in RESULTS if score <= r["max"])
           new_row = pd.DataFrame([{
@@ -386,25 +396,39 @@ if modo == "Facer o Test":
       st.session_state.current_q = 0
       st.rerun()
 
-# Panel de Control (Dashboard interno)
+# Panel de Control con Contrasinal
 elif modo == "Panel de Control (N)":
   st.title("Panel de Control - Corresponsables")
-  st.write("Vista interna de rexistro de participación e xénero.")
 
-  if os.path.exists(DATA_FILE):
-    df = pd.read_csv(DATA_FILE)
+  # Contrasinal de acceso (podes cambiala aquí se o desexas)
+  PASSWORD_SECRETA = "corresponsables2026"
 
-    # N total
-    st.metric(label="Total de Enquisas Realizadas (N)", value=len(df))
+  password_ingresada = st.text_input(
+      "Introduce o contrasinal de acceso:", type="password"
+  )
 
-    if not df.empty:
-      st.subheader("Desglose por Xénero")
-      genero_counts = df["genero"].value_counts()
-      st.bar_chart(genero_counts)
+  if password_ingresada == PASSWORD_SECRETA:
+    st.success("Acceso concedido.")
+    st.write("Vista interna de rexistro de participación e xénero.")
 
-      st.subheader("Detalle de Rexistros")
-      st.dataframe(df)
+    if os.path.exists(DATA_FILE):
+      df = pd.read_csv(DATA_FILE)
+      st.metric(label="Total de Enquisas Realizadas (N)", value=len(df))
+
+      if not df.empty:
+        st.subheader("Desglose por Xénero")
+        genero_counts = df["genero"].value_counts()
+        st.bar_chart(genero_counts)
+
+        st.subheader("Detalle de Rexistros")
+        st.dataframe(df)
+      else:
+        st.info("Aínda non hai rexistros gardados.")
     else:
-      st.info("Aínda non hai rexistros gardados.")
-  else:
-    st.info("Aínda non existe o ficheiro de datos.")
+      st.info("Aínda non existe o ficheiro de datos.")
+
+  elif password_ingresada != "":
+    st.error("Contrasinal incorrecto.")
+
+# Mostrar logos centrados en la parte inferior de la app
+mostrar_logos()
