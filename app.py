@@ -3,7 +3,7 @@ from datetime import datetime
 import pandas as pd
 import streamlit as st
 
-# Configuración de la página (sidebar colapsado por defecto)
+# Configuración da páxina (sidebar colapsado por defecto)
 st.set_page_config(
     page_title="Pensas por ti ou segues o que se espera de ti?",
     page_icon="🧠",
@@ -11,7 +11,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed",
 )
 
-# Archivo CSV para persistencia local de resultados
+# Ficheiro CSV para persistencia local de resultados
 DATA_FILE = "resultados_corresponsables.csv"
 
 
@@ -24,21 +24,20 @@ def init_csv():
 init_csv()
 
 
-# Función para mostrar los tres logos centrados en la parte inferior
+# Función para mostrar os tres logos centrados na parte inferior
 def mostrar_logos():
   logos = ["logo1.png", "logo2.png", "logo3.png"]
   existentes = [l for l in logos if os.path.exists(l)]
 
   if existentes:
     st.markdown("<br><hr>", unsafe_allow_html=True)
-    # Creamos tantas columnas como logos existan para alinearlos perfectamente
     cols = st.columns(len(existentes))
     for i, logo in enumerate(existentes):
       with cols[i]:
         st.image(logo, use_container_width=True)
 
 
-# Definición de preguntas y perfiles
+# Definición de preguntas e perfís
 QUESTIONS = [
     {
         "q": (
@@ -414,12 +413,29 @@ elif modo == "Panel de Control (N)":
       st.metric(label="Total de Enquisas Realizadas (N)", value=len(df))
 
       if not df.empty:
+        # Gráfico de Xénero
         st.subheader("Desglose por Xénero")
         genero_counts = df["genero"].value_counts()
         st.bar_chart(genero_counts)
 
+        # Gráfico de Perfís Académicos/Resultados (Novo)
+        st.subheader("Desglose por Perfil Obtido")
+        perfil_counts = df["perfil"].value_counts()
+        st.bar_chart(perfil_counts)
+
         st.subheader("Detalle de Rexistros")
         st.dataframe(df)
+
+        # Botón para borrar/limpar todos os rexistros de proba (Novo)
+        st.markdown("---")
+        if st.button("🗑️ Borrar todos os rexistros (Reiniciar datos)"):
+          df_vacio = pd.DataFrame(
+              columns=["timestamp", "genero", "puntuacion", "perfil"]
+          )
+          df_vacio.to_csv(DATA_FILE, index=False)
+          st.success("Elimináronse todos os rexistros correctamente.")
+          st.rerun()
+
       else:
         st.info("Aínda non hai rexistros gardados.")
     else:
@@ -428,5 +444,5 @@ elif modo == "Panel de Control (N)":
   elif password_ingresada != "":
     st.error("Contrasinal incorrecto.")
 
-# Mostrar los tres logos centrados en la parte inferior
+# Mostrar os tres logos centrados na parte inferior
 mostrar_logos()
