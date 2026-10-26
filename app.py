@@ -24,14 +24,18 @@ def init_csv():
 init_csv()
 
 
-# Función para mostrar los logos centrados al final si existen en el repositorio
+# Función para mostrar los tres logos centrados en la parte inferior
 def mostrar_logos():
-  # Puedes subir un archivo llamado 'logo.png' a tu repositorio de GitHub
-  if os.path.exists("logo.png"):
+  logos = ["logo1.png", "logo2.png", "logo3.png"]
+  existentes = [l for l in logos if os.path.exists(l)]
+
+  if existentes:
     st.markdown("<br><hr>", unsafe_allow_html=True)
-    col1, col2, col3 = st.columns([1, 2, 1])
-    with col2:
-      st.image("logo.png", use_container_width=True)
+    # Creamos tantas columnas como logos existan para alinearlos perfectamente
+    cols = st.columns(len(existentes))
+    for i, logo in enumerate(existentes):
+      with cols[i]:
+        st.image(logo, use_container_width=True)
 
 
 # Definición de preguntas y perfiles
@@ -280,7 +284,7 @@ RESULTS = [
     },
 ]
 
-# Menú lateral (inicialmente pechado)
+# Menú lateral
 st.sidebar.title("Navegación")
 modo = st.sidebar.radio("Elixir vista", ["Facer o Test", "Panel de Control (N)"])
 
@@ -305,7 +309,6 @@ if modo == "Facer o Test":
   if "current_q" not in st.session_state:
     st.session_state.current_q = 0
 
-  # Pantalla 1: Intro
   if st.session_state.step == "intro":
     st.info(
         "Desde pequenos e pequenas escoitamos moitas mensaxes sobre como"
@@ -326,7 +329,6 @@ if modo == "Facer o Test":
       st.session_state.answers = [None] * len(QUESTIONS)
       st.rerun()
 
-  # Pantalla 2: Preguntas
   elif st.session_state.step == "quiz":
     q_idx = st.session_state.current_q
     total = len(QUESTIONS)
@@ -379,7 +381,6 @@ if modo == "Facer o Test":
           st.session_state.step = "result"
           st.rerun()
 
-  # Pantalla 3: Resultados
   elif st.session_state.step == "result":
     score = sum(st.session_state.answers)
     tier = next(r for r in RESULTS if score <= r["max"])
@@ -396,13 +397,10 @@ if modo == "Facer o Test":
       st.session_state.current_q = 0
       st.rerun()
 
-# Panel de Control con Contrasinal
 elif modo == "Panel de Control (N)":
   st.title("Panel de Control - Corresponsables")
 
-  # Contrasinal de acceso (podes cambiala aquí se o desexas)
   PASSWORD_SECRETA = "corresponsables2026"
-
   password_ingresada = st.text_input(
       "Introduce o contrasinal de acceso:", type="password"
   )
@@ -430,5 +428,5 @@ elif modo == "Panel de Control (N)":
   elif password_ingresada != "":
     st.error("Contrasinal incorrecto.")
 
-# Mostrar logos centrados en la parte inferior de la app
+# Mostrar los tres logos centrados en la parte inferior
 mostrar_logos()
