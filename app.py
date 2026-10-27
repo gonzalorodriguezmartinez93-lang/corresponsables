@@ -24,7 +24,7 @@ def init_csv():
 init_csv()
 
 
-# Función para mostrar os tres logos centrados na parte inferior
+# Función para mostrar os tres logos centrados e a frase institucional na parte inferior
 def mostrar_logos():
   logos = ["logo1.png", "logo2.png", "logo3.png"]
   existentes = [l for l in logos if os.path.exists(l)]
@@ -35,6 +35,14 @@ def mostrar_logos():
     for i, logo in enumerate(existentes):
       with cols[i]:
         st.image(logo, use_container_width=True)
+        
+    # Frase institucional debaixo dos logos
+    st.markdown(
+        "<p style='text-align: center; font-size: 0.85rem; color: #6b6b6b; margin-top: 12px;'>"
+        "Cofinanciado por el Plan Corresponsables. Ministerio de Igualdad, Gobierno de España"
+        "</p>",
+        unsafe_allow_html=True,
+    )
 
 
 # Definición de preguntas e perfís
@@ -371,78 +379,4 @@ if modo == "Facer o Test":
               "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
               "genero": st.session_state.genero,
               "puntuacion": score,
-              "perfil": tier["title"],
-          }])
-          df_existing = pd.read_csv(DATA_FILE)
-          df_updated = pd.concat([df_existing, new_row], ignore_index=True)
-          df_updated.to_csv(DATA_FILE, index=False)
-
-          st.session_state.step = "result"
-          st.rerun()
-
-  elif st.session_state.step == "result":
-    score = sum(st.session_state.answers)
-    tier = next(r for r in RESULTS if score <= r["max"])
-
-    st.markdown(f"### A túa puntuación: {score} de {len(QUESTIONS)*3} puntos")
-    st.markdown(f"<h2 style='color: #cf202e;'>{tier['title']}</h2>", unsafe_allow_html=True)
-    st.markdown(f"**{tier['sub']}**")
-    st.markdown(tier["body"], unsafe_allow_html=True)
-
-    st.write("")
-    if st.button("Repetir o test"):
-      st.session_state.step = "intro"
-      st.session_state.answers = [None] * len(QUESTIONS)
-      st.session_state.current_q = 0
-      st.rerun()
-
-elif modo == "Panel de Control (N)":
-  st.title("Panel de Control - Corresponsables")
-
-  PASSWORD_SECRETA = "corresponsables2026"
-  password_ingresada = st.text_input(
-      "Introduce o contrasinal de acceso:", type="password"
-  )
-
-  if password_ingresada == PASSWORD_SECRETA:
-    st.success("Acceso concedido.")
-    st.write("Vista interna de rexistro de participación e xénero.")
-
-    if os.path.exists(DATA_FILE):
-      df = pd.read_csv(DATA_FILE)
-      st.metric(label="Total de Enquisas Realizadas (N)", value=len(df))
-
-      if not df.empty:
-        # Gráfico de Xénero
-        st.subheader("Desglose por Xénero")
-        genero_counts = df["genero"].value_counts()
-        st.bar_chart(genero_counts)
-
-        # Gráfico de Perfís Académicos/Resultados (Novo)
-        st.subheader("Desglose por Perfil Obtido")
-        perfil_counts = df["perfil"].value_counts()
-        st.bar_chart(perfil_counts)
-
-        st.subheader("Detalle de Rexistros")
-        st.dataframe(df)
-
-        # Botón para borrar/limpar todos os rexistros de proba (Novo)
-        st.markdown("---")
-        if st.button("🗑️ Borrar todos os rexistros (Reiniciar datos)"):
-          df_vacio = pd.DataFrame(
-              columns=["timestamp", "genero", "puntuacion", "perfil"]
-          )
-          df_vacio.to_csv(DATA_FILE, index=False)
-          st.success("Elimináronse todos os rexistros correctamente.")
-          st.rerun()
-
-      else:
-        st.info("Aínda non hai rexistros gardados.")
-    else:
-      st.info("Aínda non existe o ficheiro de datos.")
-
-  elif password_ingresada != "":
-    st.error("Contrasinal incorrecto.")
-
-# Mostrar os tres logos centrados na parte inferior
-mostrar_logos()
+              "perfil": tier
